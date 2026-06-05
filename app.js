@@ -137,9 +137,440 @@ document.addEventListener('DOMContentLoaded', () => {
     const filterChips = document.querySelectorAll('.chip');
     const exportCsvBtn = document.getElementById('export-csv-btn');
 
+    // Firebase state variables
+    const firebaseEnabled = typeof window.firebaseSDK !== 'undefined';
+    let currentUser = null;
+    let confirmationResult = null;
+    let otpCountdownInterval = null;
+    let isSyncing = false;
+    let lastSyncTime = null;
+
+    // Firebase elements
+    const userToggleBtn = document.getElementById('user-toggle-btn');
+    const userModal = document.getElementById('user-modal');
+    const closeUserModalBtn = document.getElementById('close-user-modal-btn');
+    const syncIndicatorDot = document.getElementById('sync-indicator-dot');
+    const authFlowSection = document.getElementById('auth-flow-section');
+    const profileSection = document.getElementById('profile-section');
+    const phoneAuthFormStep1 = document.getElementById('phone-auth-form-step1');
+    const phoneAuthFormStep2 = document.getElementById('phone-auth-form-step2');
+    const phoneInput = document.getElementById('phone-input');
+    const otpInput = document.getElementById('otp-input');
+    const sendOtpBtn = document.getElementById('send-otp-btn');
+    const verifyOtpBtn = document.getElementById('verify-otp-btn');
+    const otpCountdown = document.getElementById('otp-countdown');
+    const resendOtpBtn = document.getElementById('resend-otp-btn');
+    const backToStep1Btn = document.getElementById('back-to-step1-btn');
+    const userPhoneLabel = document.getElementById('user-phone-label');
+    const syncStatusBadge = document.getElementById('sync-status-badge');
+    const lastSyncTimeLabel = document.getElementById('last-sync-time');
+    const localTxCountLabel = document.getElementById('local-tx-count');
+    const forceSyncBtn = document.getElementById('force-sync-btn');
+    const logoutBtn = document.getElementById('logout-btn');
+    const deleteAccountBtn = document.getElementById('delete-account-btn');
+
     // Initialize Settings Form values
     primaryCurrencySelect.value = primaryCurrency;
     transactionCurrencySelect.value = primaryCurrency;
+
+    // -------------------------------------------------------------------------
+    // 2b. FIREBASE AUTH & CLOUD SYNC LOGIC
+    // -------------------------------------------------------------------------
+    function updateSyncIndicator(state) {
+        if (!syncIndicatorDot) return;
+        syncIndicatorDot.className = 'sync-indicator-dot ' + state;
+        
+        if (syncStatusBadge) {
+            syncStatusBadge.className = 'sync-status-badge ' + (state === 'online' ? 'synced' : (state === 'pending' ? 'pending' : 'offline'));
+            const badgeText = syncStatusBadge.querySelector('span');
+            if (badgeText) {
+                badgeText.textContent = state === 'online' ? 'متصل بالسحابة' : (state === 'pending' ? 'مزامنة معلقة' : 'الوضع المحلي');
+            }
+        }
+    }
+
+    function triggerCloudSave() {
+        if (!firebaseEnabled || !currentUser) return;
+        
+        const { doc, setDoc } = window.firebaseSDK;
+        const userDocRef = doc(window.firebaseDb, 'users', currentUser.uid);
+        
+        updateSyncIndicator('pending');
+        
+        // Add updatedAt timestamp to all transactions that don't have it
+        transactions.forEach(t => {
+            if (!t.updatedAt) t.updatedAt = Date.now();
+        });
+        
+        setDoc(userDocRef, {
+            transactions: transactions,
+            stores: stores,
+            primaryCurrency: primaryCurrency,
+            activeStore: activeStore,
+            theme: currentTheme,
+            updatedAt: Date.now()
+        }, { merge: true })
+        .then(() => {
+            updateSyncIndicator('online');
+            lastSyncTime = new Date().toLocaleTimeString('ar-EG');
+            if (lastSyncTimeLabel) lastSyncTimeLabel.textContent = lastSyncTime;
+        })
+        .catch(error => {
+            console.error("Failed to upload changes to Firestore:", error);
+            updateSyncIndicator('pending');
+        });
+    }
+
+    async function syncDataWithCloud(force = false) {
+        if (!firebaseEnabled || !currentUser || isSyncing) return;
+        
+        isSyncing = true;
+        updateSyncIndicator('pending');
+        
+        const { doc, getDoc, setDoc } = window.firebaseSDK;
+        const userDocRef = doc(window.firebaseDb, 'users', currentUser.uid);
+        
+        try {
+            const docSnap = await getDoc(userDocRef);
+            let cloudData = null;
+            
+            if (docSnap.exists()) {
+                cloudData = docSnap.data();
+            }
+            
+            let dataMerged = false;
+            
+            if (cloudData) {
+                // 1. Merge transactions
+                const cloudTx = cloudData.transactions || [];
+                const localTx = [...transactions];
+                let mergedTx = [...localTx];
+                
+                cloudTx.forEach(ctx => {
+                    const localMatchIdx = mergedTx.findIndex(ltx => ltx.id == ctx.id);
+                    if (localMatchIdx === -1) {
+                        mergedTx.push(ctx);
+                        dataMerged = true;
+                    } else {
+                        const ltx = mergedTx[localMatchIdx];
+                        const ctxUpdated = ctx.updatedAt || 0;
+                        const ltxUpdated = ltx.updatedAt || 0;
+                        
+                        if (ctxUpdated > ltxUpdated) {
+                            mergedTx[localMatchIdx] = ctx;
+                            dataMerged = true;
+                        } else if (ltxUpdated > ctxUpdated) {
+                            dataMerged = true;
+                        }
+                    }
+                });
+                
+                // Add updatedAt if missing
+                mergedTx.forEach(mtx => {
+                    if (!mtx.updatedAt) mtx.updatedAt = Date.now();
+                });
+                
+                transactions = mergedTx;
+                localStorage.setItem('muhasib_transactions', JSON.stringify(transactions));
+                
+                // 2. Merge stores
+                const cloudStores = cloudData.stores || [];
+                const mergedStores = Array.from(new Set([...stores, ...cloudStores]));
+                if (mergedStores.length !== stores.length) {
+                    stores = mergedStores;
+                    localStorage.setItem('muhasib_stores', JSON.stringify(stores));
+                    dataMerged = true;
+                }
+                
+                // 3. Settings
+                if (cloudData.primaryCurrency && cloudData.primaryCurrency !== primaryCurrency) {
+                    primaryCurrency = cloudData.primaryCurrency;
+                    localStorage.setItem('muhasib_primary_currency', primaryCurrency);
+                    if (primaryCurrencySelect) primaryCurrencySelect.value = primaryCurrency;
+                    if (transactionCurrencySelect) transactionCurrencySelect.value = primaryCurrency;
+                    dataMerged = true;
+                }
+                
+                if (cloudData.theme && cloudData.theme !== currentTheme) {
+                    currentTheme = cloudData.theme;
+                    localStorage.setItem('muhasib_theme', currentTheme);
+                    if (document.body) {
+                        if (currentTheme === 'light') {
+                            document.body.classList.add('light-theme');
+                        } else {
+                            document.body.classList.remove('light-theme');
+                        }
+                    }
+                    updateThemeIcon();
+                    dataMerged = true;
+                }
+            }
+            
+            // Upload merged/latest state to Firestore
+            await setDoc(userDocRef, {
+                transactions: transactions,
+                stores: stores,
+                primaryCurrency: primaryCurrency,
+                activeStore: activeStore,
+                theme: currentTheme,
+                updatedAt: Date.now()
+            }, { merge: true });
+            
+            lastSyncTime = new Date().toLocaleTimeString('ar-EG');
+            if (lastSyncTimeLabel) lastSyncTimeLabel.textContent = lastSyncTime;
+            updateSyncIndicator('online');
+            
+            if (dataMerged || force) {
+                populateStoreDropdowns();
+                renderStoresManagement();
+                render();
+            }
+        } catch (error) {
+            console.error("Error syncing data:", error);
+            updateSyncIndicator('pending');
+        } finally {
+            isSyncing = false;
+        }
+    }
+
+    function startOTPCountdown() {
+        let seconds = 60;
+        if (otpCountdown) otpCountdown.textContent = `المتبقي: ${seconds} ثانية`;
+        if (resendOtpBtn) resendOtpBtn.style.display = 'none';
+        
+        clearInterval(otpCountdownInterval);
+        otpCountdownInterval = setInterval(() => {
+            seconds--;
+            if (otpCountdown) otpCountdown.textContent = `المتبقي: ${seconds} ثانية`;
+            if (seconds <= 0) {
+                clearInterval(otpCountdownInterval);
+                if (otpCountdown) otpCountdown.textContent = 'انتهى الوقت';
+                if (resendOtpBtn) resendOtpBtn.style.display = 'inline-block';
+            }
+        }, 1000);
+    }
+
+    if (firebaseEnabled) {
+        const { onAuthStateChanged, RecaptchaVerifier, signInWithPhoneNumber, signOut } = window.firebaseSDK;
+        
+        // Listen to Auth State Changes
+        onAuthStateChanged(window.firebaseAuth, (user) => {
+            currentUser = user;
+            if (user) {
+                console.log("Logged in user:", user.phoneNumber);
+                if (userPhoneLabel) userPhoneLabel.textContent = user.phoneNumber;
+                updateSyncIndicator('online');
+                
+                if (authFlowSection) authFlowSection.style.display = 'none';
+                if (profileSection) profileSection.style.display = 'block';
+                if (localTxCountLabel) localTxCountLabel.textContent = `${transactions.length} معاملة`;
+                
+                // Trigger merge and sync
+                syncDataWithCloud(true);
+            } else {
+                console.log("No user logged in.");
+                updateSyncIndicator('offline');
+                
+                if (authFlowSection) authFlowSection.style.display = 'block';
+                if (profileSection) profileSection.style.display = 'none';
+                if (phoneAuthFormStep1) phoneAuthFormStep1.style.display = 'block';
+                if (phoneAuthFormStep2) phoneAuthFormStep2.style.display = 'none';
+                
+                clearInterval(otpCountdownInterval);
+            }
+        });
+
+        // Toggle Modal Click
+        if (userToggleBtn) {
+            userToggleBtn.addEventListener('click', () => {
+                if (userModal) {
+                    userModal.style.display = 'flex';
+                    if (currentUser && localTxCountLabel) {
+                        localTxCountLabel.textContent = `${transactions.length} معاملة`;
+                    }
+                }
+            });
+        }
+
+        if (closeUserModalBtn) {
+            closeUserModalBtn.addEventListener('click', () => {
+                if (userModal) userModal.style.display = 'none';
+            });
+        }
+
+        if (userModal) {
+            userModal.addEventListener('click', (e) => {
+                if (e.target === userModal) {
+                    userModal.style.display = 'none';
+                }
+            });
+        }
+
+        // Step 1 Form Submit (Send Verification Code)
+        if (phoneAuthFormStep1) {
+            phoneAuthFormStep1.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const rawPhone = phoneInput.value.trim();
+                
+                if (!rawPhone.startsWith('+') || rawPhone.length < 9) {
+                    alert('يرجى إدخال رقم الهاتف كاملاً مع رمز الدولة مبدوءاً بـ + (مثال: +966500000000)');
+                    return;
+                }
+                
+                sendOtpBtn.disabled = true;
+                const originalBtnText = sendOtpBtn.querySelector('span').textContent;
+                sendOtpBtn.querySelector('span').textContent = 'جاري الإرسال...';
+                
+                try {
+                    if (!window.recaptchaVerifier) {
+                        window.recaptchaVerifier = new RecaptchaVerifier(window.firebaseAuth, 'recaptcha-container', {
+                            'size': 'invisible'
+                        });
+                    }
+                    
+                    confirmationResult = await signInWithPhoneNumber(window.firebaseAuth, rawPhone, window.recaptchaVerifier);
+                    
+                    phoneAuthFormStep1.style.display = 'none';
+                    phoneAuthFormStep2.style.display = 'block';
+                    startOTPCountdown();
+                } catch (error) {
+                    console.error("SMS Send Error:", error);
+                    alert(`فشل إرسال رمز التحقق. يرجى التأكد من كتابة الرقم بشكل صحيح وتفعيل الخدمة في فاير بيز. الخطأ: ${error.message}`);
+                    if (window.recaptchaVerifier) {
+                        window.recaptchaVerifier.clear();
+                        window.recaptchaVerifier = null;
+                    }
+                } finally {
+                    sendOtpBtn.disabled = false;
+                    sendOtpBtn.querySelector('span').textContent = originalBtnText;
+                }
+            });
+        }
+
+        // Step 2 Form Submit (Confirm Verification Code)
+        if (phoneAuthFormStep2) {
+            phoneAuthFormStep2.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const code = otpInput.value.trim();
+                
+                if (code.length !== 6 || isNaN(code)) {
+                    alert('يرجى إدخال كود التحقق المكون من 6 أرقام.');
+                    return;
+                }
+                
+                verifyOtpBtn.disabled = true;
+                const originalBtnText = verifyOtpBtn.querySelector('span').textContent;
+                verifyOtpBtn.querySelector('span').textContent = 'جاري التأكيد...';
+                
+                try {
+                    await confirmationResult.confirm(code);
+                    if (userModal) userModal.style.display = 'none';
+                    otpInput.value = '';
+                } catch (error) {
+                    console.error("Verification Error:", error);
+                    alert('كود التحقق غير صحيح، يرجى المحاولة مرة أخرى.');
+                } finally {
+                    verifyOtpBtn.disabled = false;
+                    verifyOtpBtn.querySelector('span').textContent = originalBtnText;
+                }
+            });
+        }
+
+        // Back to Step 1
+        if (backToStep1Btn) {
+            backToStep1Btn.addEventListener('click', () => {
+                phoneAuthFormStep2.style.display = 'none';
+                phoneAuthFormStep1.style.display = 'block';
+                clearInterval(otpCountdownInterval);
+            });
+        }
+
+        // Resend OTP
+        if (resendOtpBtn) {
+            resendOtpBtn.addEventListener('click', () => {
+                if (phoneAuthFormStep1) {
+                    phoneAuthFormStep1.requestSubmit();
+                }
+            });
+        }
+
+        // Force Sync click
+        if (forceSyncBtn) {
+            forceSyncBtn.addEventListener('click', async () => {
+                forceSyncBtn.disabled = true;
+                const origText = forceSyncBtn.querySelector('span').textContent;
+                forceSyncBtn.querySelector('span').textContent = 'جاري المزامنة...';
+                
+                await syncDataWithCloud(true);
+                
+                forceSyncBtn.disabled = false;
+                forceSyncBtn.querySelector('span').textContent = origText;
+                alert('تمت المزامنة بنجاح مع قاعدة البيانات السحابية!');
+            });
+        }
+
+        // Logout
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', async () => {
+                if (confirm('هل أنت متأكد من تسجيل الخروج؟ ستبقى البيانات محفوظة محلياً على هذا الجهاز.')) {
+                    try {
+                        await signOut(window.firebaseAuth);
+                        if (userModal) userModal.style.display = 'none';
+                    } catch (error) {
+                        console.error("Logout error:", error);
+                    }
+                }
+            });
+        }
+
+        // Delete Account
+        if (deleteAccountBtn) {
+            deleteAccountBtn.addEventListener('click', async () => {
+                const conf1 = confirm('⚠️ تحذير: هل أنت متأكد تماماً من حذف حسابك؟ سيؤدي ذلك إلى حذف جميع بياناتك السحابية نهائياً من السيرفر.');
+                if (!conf1) return;
+                
+                const conf2 = confirm('هل تريد أيضاً مسح البيانات المحلية المخزنة على هذا المتصفح؟ اضغط (موافق) لمسحها، أو (إلغاء) للاحتفاظ بها محلياً فقط.');
+                
+                try {
+                    deleteAccountBtn.disabled = true;
+                    const userDocRef = doc(window.firebaseDb, 'users', currentUser.uid);
+                    await window.firebaseSDK.deleteDoc(userDocRef);
+                    await window.firebaseSDK.deleteUser(currentUser);
+                    
+                    if (conf2) {
+                        localStorage.clear();
+                        transactions = [];
+                        stores = ['المتجر الرئيسي'];
+                        primaryCurrency = 'ر.س';
+                        activeStore = 'all';
+                        currentTheme = 'light';
+                        
+                        populateStoreDropdowns();
+                        renderStoresManagement();
+                        render();
+                    }
+                    
+                    alert('تم حذف الحساب بنجاح.');
+                    if (userModal) userModal.style.display = 'none';
+                } catch (error) {
+                    console.error("Delete account error:", error);
+                    alert(`فشل حذف الحساب. قد يتطلب هذا الإجراء تسجيل الدخول مجدداً حديثاً لأسباب أمنية. يرجى تسجيل الخروج ثم تسجيل الدخول مرة أخرى والمحاولة. الخطأ: ${error.message}`);
+                } finally {
+                    deleteAccountBtn.disabled = false;
+                }
+            });
+        }
+    } else {
+        if (syncIndicatorDot) {
+            syncIndicatorDot.className = 'sync-indicator-dot offline';
+            syncIndicatorDot.title = 'الوضع المحلي (لم يتم تهيئة فاير بيز)';
+        }
+        if (userToggleBtn) {
+            userToggleBtn.addEventListener('click', () => {
+                alert('التطبيق يعمل حالياً بالوضع المحلي فقط. لتفعيل المزامنة السحابية، يرجى ملء بيانات مشروعك في ملف firebase-config.js');
+            });
+        }
+    }
 
     // -------------------------------------------------------------------------
     // 3. EVENT LISTENERS
@@ -151,7 +582,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (document.body) {
                 document.body.classList.toggle('light-theme');
                 const theme = document.body.classList.contains('light-theme') ? 'light' : 'dark';
+                currentTheme = theme;
                 localStorage.setItem('muhasib_theme', theme);
+                triggerCloudSave();
             }
             updateThemeIcon();
             render();
@@ -184,6 +617,7 @@ document.addEventListener('DOMContentLoaded', () => {
         primaryCurrency = e.target.value;
         localStorage.setItem('muhasib_primary_currency', primaryCurrency);
         transactionCurrencySelect.value = primaryCurrency;
+        triggerCloudSave();
         render();
     });
 
@@ -194,6 +628,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (activeStore !== 'all') {
             transactionStoreSelect.value = activeStore;
         }
+        triggerCloudSave();
         render();
     });
 
@@ -516,6 +951,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         stores.push(storeName);
         localStorage.setItem('muhasib_stores', JSON.stringify(stores));
+        triggerCloudSave();
         
         newStoreNameInput.value = '';
         newStoreNameInput.classList.remove('input-error');
@@ -542,6 +978,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         stores = stores.filter(s => s !== storeName);
         localStorage.setItem('muhasib_stores', JSON.stringify(stores));
+        triggerCloudSave();
 
         if (activeStore === storeName) {
             activeStore = 'all';
@@ -633,6 +1070,7 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     function saveToStorage() {
         localStorage.setItem('muhasib_transactions', JSON.stringify(transactions));
+        triggerCloudSave();
     }
 
     /**
