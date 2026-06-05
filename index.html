@@ -380,51 +380,104 @@
             <div id="auth-flow-section" class="modal-body">
                 <div class="auth-welcome-text">
                     <p class="empty-title">مزامنة سحابية آمنة</p>
-                    <p class="empty-desc">سجل دخولك برقم هاتفك لحفظ ديونك وسجل المعاملات سحابياً للوصول إليها من أي جهاز آخر.</p>
+                    <p class="empty-desc">اختر طريقة تسجيل الدخول لحفظ ديونك وسجل المعاملات سحابياً والوصول إليها من أي جهاز آخر.</p>
                 </div>
-                
-                <div class="settings-divider"></div>
-                
-                <!-- Phone Step 1: Send OTP -->
-                <form id="phone-auth-form-step1" novalidate>
-                    <div class="form-group">
-                        <label for="phone-input">رقم الهاتف الدولي</label>
-                        <div class="input-with-icon">
-                            <i data-lucide="phone" class="input-icon"></i>
-                            <input type="tel" id="phone-input" placeholder="+966500000000" dir="ltr" required>
-                        </div>
-                        <small class="form-help-text" style="color: var(--text-muted); display: block; margin-top: 4px; font-size: 11px;">يرجى كتابة رقم الهاتف مع رمز الدولة (مثال +9665... أو +201...)</small>
-                    </div>
-                    <button type="submit" class="btn btn-primary" id="send-otp-btn">
-                        <span>إرسال رمز التحقق</span>
-                        <i data-lucide="send"></i>
+
+                <div class="auth-tabs" style="display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid var(--border-glass); padding-bottom: 8px;">
+                    <button type="button" id="tab-auth-phone" class="view-tab active" style="flex: 1; padding: 8px; font-size: 13px; border-radius: var(--radius-sm);">
+                        <i data-lucide="phone" style="width: 14px; height: 14px; margin-left: 4px; display: inline-block; vertical-align: middle;"></i>
+                        <span>رقم الهاتف</span>
                     </button>
-                </form>
-                
-                <!-- Phone Step 2: Verify OTP (Hidden by default) -->
-                <form id="phone-auth-form-step2" style="display: none;" novalidate>
-                    <div class="form-group">
-                        <label for="otp-input">كود التحقق المرسل (SMS)</label>
-                        <div class="input-with-icon">
-                            <i data-lucide="lock" class="input-icon"></i>
-                            <input type="text" id="otp-input" placeholder="------" pattern="[0-9]{6}" maxlength="6" required style="letter-spacing: 8px; text-align: center;">
+                    <button type="button" id="tab-auth-email" class="view-tab" style="flex: 1; padding: 8px; font-size: 13px; border-radius: var(--radius-sm);">
+                        <i data-lucide="mail" style="width: 14px; height: 14px; margin-left: 4px; display: inline-block; vertical-align: middle;"></i>
+                        <span>البريد الإلكتروني</span>
+                    </button>
+                </div>
+
+                <!-- Phone Authentication Section -->
+                <div id="phone-auth-container">
+                    <!-- Phone Step 1: Send OTP -->
+                    <form id="phone-auth-form-step1" novalidate>
+                        <div class="form-group">
+                            <label for="phone-input">رقم الهاتف الدولي</label>
+                            <div class="input-with-icon">
+                                <i data-lucide="phone" class="input-icon"></i>
+                                <input type="tel" id="phone-input" placeholder="+966500000000" dir="ltr" required>
+                            </div>
+                            <small class="form-help-text" style="color: var(--text-muted); display: block; margin-top: 4px; font-size: 11px;">يرجى كتابة رقم الهاتف مع رمز الدولة (مثال +9665... أو +201...)</small>
                         </div>
-                        <div class="otp-timer-row" style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 12px;">
-                            <span id="otp-countdown" style="color: var(--text-secondary);">المتبقي: 60 ثانية</span>
-                            <button type="button" id="resend-otp-btn" class="btn-link" style="display: none; background: none; border: none; color: var(--primary); cursor: pointer; text-decoration: underline; font-family: inherit;">إعادة الإرسال</button>
+                        <button type="submit" class="btn btn-primary" id="send-otp-btn">
+                            <span>إرسال رمز التحقق</span>
+                            <i data-lucide="send"></i>
+                        </button>
+                    </form>
+                    
+                    <!-- Phone Step 2: Verify OTP (Hidden by default) -->
+                    <form id="phone-auth-form-step2" style="display: none;" novalidate>
+                        <div class="form-group">
+                            <label for="otp-input">كود التحقق المرسل (SMS)</label>
+                            <div class="input-with-icon">
+                                <i data-lucide="lock" class="input-icon"></i>
+                                <input type="text" id="otp-input" placeholder="------" pattern="[0-9]{6}" maxlength="6" required style="letter-spacing: 8px; text-align: center;">
+                            </div>
+                            <div class="otp-timer-row" style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 12px;">
+                                <span id="otp-countdown" style="color: var(--text-secondary);">المتبقي: 60 ثانية</span>
+                                <button type="button" id="resend-otp-btn" class="btn-link" style="display: none; background: none; border: none; color: var(--primary); cursor: pointer; text-decoration: underline; font-family: inherit;">إعادة الإرسال</button>
+                            </div>
                         </div>
-                    </div>
-                    <div class="form-actions-row">
-                        <button type="submit" class="btn btn-primary" id="verify-otp-btn">
-                            <span>تأكيد الدخول</span>
-                            <i data-lucide="check-check"></i>
+                        <div class="form-actions-row">
+                            <button type="submit" class="btn btn-primary" id="verify-otp-btn">
+                                <span>تأكيد الدخول</span>
+                                <i data-lucide="check-check"></i>
+                            </button>
+                            <button type="button" id="back-to-step1-btn" class="btn btn-secondary-compact">
+                                <span>رجوع</span>
+                                <i data-lucide="arrow-left"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Email Authentication Section -->
+                <div id="email-auth-container" style="display: none;">
+                    <form id="email-auth-form" novalidate>
+                        <div class="form-group">
+                            <label for="email-input">البريد الإلكتروني</label>
+                            <div class="input-with-icon">
+                                <i data-lucide="mail" class="input-icon"></i>
+                                <input type="email" id="email-input" placeholder="name@example.com" dir="ltr" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="password-input">كلمة المرور</label>
+                            <div class="input-with-icon">
+                                <i data-lucide="lock" class="input-icon"></i>
+                                <input type="password" id="password-input" placeholder="••••••••" required>
+                            </div>
+                        </div>
+                        
+                        <!-- Registration Confirmation (Hidden by default) -->
+                        <div id="register-fields-group" style="display: none;">
+                            <div class="form-group">
+                                <label for="password-confirm-input">تأكيد كلمة المرور</label>
+                                <div class="input-with-icon">
+                                    <i data-lucide="lock" class="input-icon"></i>
+                                    <input type="password" id="password-confirm-input" placeholder="••••••••">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary" id="email-submit-btn" style="width: 100%; margin-top: 8px;">
+                            <span id="email-submit-text">تسجيل الدخول</span>
+                            <i data-lucide="log-in" id="email-submit-icon"></i>
                         </button>
-                        <button type="button" id="back-to-step1-btn" class="btn btn-secondary-compact">
-                            <span>رجوع</span>
-                            <i data-lucide="arrow-left"></i>
-                        </button>
-                    </div>
-                </form>
+                        
+                        <div class="auth-toggle-row" style="text-align: center; margin-top: 12px; font-size: 13px;">
+                            <span id="email-toggle-prompt" style="color: var(--text-secondary);">ليس لديك حساب؟</span>
+                            <button type="button" id="toggle-email-mode-btn" class="btn-link" style="font-weight: 500;">إنشاء حساب جديد</button>
+                        </div>
+                    </form>
+                </div>
             </div>
             
             <!-- Tab: Logged In (Profile Control) -->
@@ -484,7 +537,7 @@
     <!-- Firebase SDK Module -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-        import { getAuth, RecaptchaVerifier, signInWithPhoneNumber, signOut, onAuthStateChanged, deleteUser } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { getAuth, RecaptchaVerifier, signInWithPhoneNumber, signOut, onAuthStateChanged, deleteUser, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
         import { getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
         // Initialize Firebase if configured
@@ -508,6 +561,8 @@
                     signOut,
                     onAuthStateChanged,
                     deleteUser,
+                    signInWithEmailAndPassword,
+                    createUserWithEmailAndPassword,
                     doc,
                     setDoc,
                     getDoc,

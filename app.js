@@ -169,6 +169,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const logoutBtn = document.getElementById('logout-btn');
     const deleteAccountBtn = document.getElementById('delete-account-btn');
 
+    // Email/Auth Tab elements
+    const tabAuthPhone = document.getElementById('tab-auth-phone');
+    const tabAuthEmail = document.getElementById('tab-auth-email');
+    const phoneAuthContainer = document.getElementById('phone-auth-container');
+    const emailAuthContainer = document.getElementById('email-auth-container');
+    const emailAuthForm = document.getElementById('email-auth-form');
+    const emailInput = document.getElementById('email-input');
+    const passwordInput = document.getElementById('password-input');
+    const registerFieldsGroup = document.getElementById('register-fields-group');
+    const passwordConfirmInput = document.getElementById('password-confirm-input');
+    const emailSubmitBtn = document.getElementById('email-submit-btn');
+    const emailSubmitText = document.getElementById('email-submit-text');
+    const emailTogglePrompt = document.getElementById('email-toggle-prompt');
+    const toggleEmailModeBtn = document.getElementById('toggle-email-mode-btn');
+
     // Initialize Settings Form values
     primaryCurrencySelect.value = primaryCurrency;
     transactionCurrencySelect.value = primaryCurrency;
@@ -351,14 +366,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (firebaseEnabled) {
-        const { onAuthStateChanged, RecaptchaVerifier, signInWithPhoneNumber, signOut } = window.firebaseSDK;
+        const { onAuthStateChanged, RecaptchaVerifier, signInWithPhoneNumber, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword } = window.firebaseSDK;
         
         // Listen to Auth State Changes
         onAuthStateChanged(window.firebaseAuth, (user) => {
             currentUser = user;
             if (user) {
-                console.log("Logged in user:", user.phoneNumber);
-                if (userPhoneLabel) userPhoneLabel.textContent = user.phoneNumber;
+                const userIdentity = user.email || user.phoneNumber || 'مستخدم مسجل';
+                console.log("Logged in user:", userIdentity);
+                if (userPhoneLabel) userPhoneLabel.textContent = userIdentity;
                 updateSyncIndicator('online');
                 
                 if (authFlowSection) authFlowSection.style.display = 'none';
@@ -375,10 +391,133 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (profileSection) profileSection.style.display = 'none';
                 if (phoneAuthFormStep1) phoneAuthFormStep1.style.display = 'block';
                 if (phoneAuthFormStep2) phoneAuthFormStep2.style.display = 'none';
+                if (emailAuthContainer) emailAuthContainer.style.display = 'none';
+                if (phoneAuthContainer) phoneAuthContainer.style.display = 'block';
+                
+                // Reset active tab to phone
+                if (tabAuthPhone && tabAuthEmail) {
+                    tabAuthPhone.classList.add('active');
+                    tabAuthEmail.classList.remove('active');
+                }
                 
                 clearInterval(otpCountdownInterval);
             }
         });
+
+        // Toggle tabs (Phone vs Email)
+        if (tabAuthPhone && tabAuthEmail) {
+            tabAuthPhone.addEventListener('click', () => {
+                tabAuthPhone.classList.add('active');
+                tabAuthEmail.classList.remove('active');
+                if (phoneAuthContainer) phoneAuthContainer.style.display = 'block';
+                if (emailAuthContainer) emailAuthContainer.style.display = 'none';
+            });
+
+            tabAuthEmail.addEventListener('click', () => {
+                tabAuthEmail.classList.add('active');
+                tabAuthPhone.classList.remove('active');
+                if (phoneAuthContainer) phoneAuthContainer.style.display = 'none';
+                if (emailAuthContainer) emailAuthContainer.style.display = 'block';
+            });
+        }
+
+        // Email Registration/Login Mode Toggle
+        let isEmailRegisterMode = false;
+        if (toggleEmailModeBtn) {
+            toggleEmailModeBtn.addEventListener('click', () => {
+                isEmailRegisterMode = !isEmailRegisterMode;
+                if (isEmailRegisterMode) {
+                    if (registerFieldsGroup) registerFieldsGroup.style.display = 'block';
+                    if (emailSubmitText) emailSubmitText.textContent = 'إنشاء حساب ومزامنة';
+                    if (emailTogglePrompt) emailTogglePrompt.textContent = 'لديك حساب بالفعل؟';
+                    if (toggleEmailModeBtn) toggleEmailModeBtn.textContent = 'تسجيل الدخول';
+                } else {
+                    if (registerFieldsGroup) registerFieldsGroup.style.display = 'none';
+                    if (emailSubmitText) emailSubmitText.textContent = 'تسجيل الدخول';
+                    if (emailTogglePrompt) emailTogglePrompt.textContent = 'ليس لديك حساب؟';
+                    if (toggleEmailModeBtn) toggleEmailModeBtn.textContent = 'إنشاء حساب جديد';
+                }
+            });
+        }
+
+        // Email Form Submit Handler
+        if (emailAuthForm) {
+            emailAuthForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = emailInput.value.trim();
+                const password = passwordInput.value;
+                
+                if (!email || !password) {
+                    alert('يرجى ملء جميع الحقول المطلوبة.');
+                    return;
+                }
+                
+                if (isEmailRegisterMode) {
+                    const confirmPass = passwordConfirmInput.value;
+                    if (password !== confirmPass) {
+                        alert('كلمات المرور غير متطابقة!');
+                        return;
+                    }
+                    if (password.length < 6) {
+                        alert('يجب أن تكون كلمة المرور مكونة من 6 أحرف أو أكثر.');
+                        return;
+                    }
+                    
+                    emailSubmitBtn.disabled = true;
+                    const origText = emailSubmitText.textContent;
+                    emailSubmitText.textContent = 'جاري إنشاء الحساب...';
+                    
+                    try {
+                        await createUserWithEmailAndPassword(window.firebaseAuth, email, password);
+                        if (userModal) userModal.style.display = 'none';
+                        // Reset form
+                        emailInput.value = '';
+                        passwordInput.value = '';
+                        passwordConfirmInput.value = '';
+                    } catch (err) {
+                        console.error("Register Error:", err);
+                        let errMsg = 'فشل إنشاء الحساب.';
+                        if (err.code === 'auth/email-already-in-use') {
+                            errMsg = 'هذا البريد الإلكتروني مسجل بالفعل!';
+                        } else if (err.code === 'auth/invalid-email') {
+                            errMsg = 'البريد الإلكتروني غير صالح.';
+                        } else if (err.code === 'auth/weak-password') {
+                            errMsg = 'كلمة المرور ضعيفة جداً.';
+                        } else {
+                            errMsg += ` الخطأ: ${err.message}`;
+                        }
+                        alert(errMsg);
+                    } finally {
+                        emailSubmitBtn.disabled = false;
+                        emailSubmitText.textContent = origText;
+                    }
+                } else {
+                    emailSubmitBtn.disabled = true;
+                    const origText = emailSubmitText.textContent;
+                    emailSubmitText.textContent = 'جاري تسجيل الدخول...';
+                    
+                    try {
+                        await signInWithEmailAndPassword(window.firebaseAuth, email, password);
+                        if (userModal) userModal.style.display = 'none';
+                        // Reset form
+                        emailInput.value = '';
+                        passwordInput.value = '';
+                    } catch (err) {
+                        console.error("Login Error:", err);
+                        let errMsg = 'فشل تسجيل الدخول. يرجى التحقق من صحة البيانات.';
+                        if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+                            errMsg = 'البريد الإلكتروني أو كلمة المرور غير صحيحة.';
+                        } else {
+                            errMsg += ` الخطأ: ${err.message}`;
+                        }
+                        alert(errMsg);
+                    } finally {
+                        emailSubmitBtn.disabled = false;
+                        emailSubmitText.textContent = origText;
+                    }
+                }
+            });
+        }
 
         // Toggle Modal Click
         if (userToggleBtn) {

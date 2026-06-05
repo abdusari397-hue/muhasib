@@ -1,13 +1,14 @@
 // إعدادات تطبيق فاير بيز (Firebase Config)
-// انسخ الإعدادات الخاصة بك من لوحة تحكم فاير بيز والصقها هنا لكي تعمل المزامنة السحابية.
+// تم إعدادها تلقائياً للمشروع: muhasib-9cd3b
 
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT_ID.appspot.com",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    apiKey: "AIzaSyD4rX0lH1B5aANudrU2v-WOEop8jGK5dFg",
+    authDomain: "muhasib-9cd3b.firebaseapp.com",
+    projectId: "muhasib-9cd3b",
+    storageBucket: "muhasib-9cd3b.firebasestorage.app",
+    messagingSenderId: "315392661607",
+    appId: "1:315392661607:web:307ed256a2dc33907f1cc2",
+    measurementId: "G-6BGYG848R4"
 };
 
 // تصدير الإعدادات للنافذة العامة لكي يستخدمها التطبيق
