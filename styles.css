@@ -1,0 +1,1582 @@
+/* ==========================================
+   DESIGN SYSTEM & VARIABLES
+   ========================================== */
+:root {
+    /* Colors (HSL) - Soft Charcoal/Slate Gray Dark Theme (Slightly Lighter) */
+    --bg-main: hsl(220, 10%, 15%);
+    --bg-card: hsla(220, 12%, 23%, 0.65);
+    --bg-card-hover: hsla(220, 12%, 27%, 0.8);
+    --border-glass: rgba(255, 255, 255, 0.1);
+    --border-glass-focus: rgba(108, 92, 231, 0.45);
+    --border-dashed: rgba(255, 255, 255, 0.15);
+    
+    --primary: hsl(250, 84%, 67%);
+    --primary-glow: rgba(108, 92, 231, 0.15);
+    --primary-dark: hsl(250, 84%, 55%);
+    --primary-light: hsl(250, 84%, 75%);
+
+    --success: hsl(162, 70%, 42%);
+    --success-light: hsl(162, 70%, 50%);
+    --success-glow: rgba(20, 184, 135, 0.15);
+
+    --danger: hsl(348, 80%, 54%);
+    --danger-light: hsl(348, 80%, 62%);
+    --danger-glow: rgba(244, 63, 110, 0.15);
+
+    --text-primary: hsl(0, 0%, 95%);
+    --text-secondary: hsl(220, 10%, 74%);
+    --text-muted: hsl(220, 8%, 58%);
+
+    --radius-sm: 8px;
+    --radius-md: 14px;
+    --radius-lg: 24px;
+    --radius-xl: 32px;
+
+    --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Backgrounds mapping */
+    --bg-frame: hsla(220, 12%, 19%, 0.94);
+    --bg-settings: rgba(0, 0, 0, 0.15);
+    --bg-control: rgba(0, 0, 0, 0.12);
+    --bg-input: rgba(255, 255, 255, 0.05);
+    --bg-item: rgba(255, 255, 255, 0.035);
+    --bg-modal: hsla(220, 12%, 20%, 0.98);
+}
+
+/* Light Theme Variables */
+body.light-theme {
+    --bg-main: hsl(220, 30%, 93%);
+    --bg-frame: hsla(220, 30%, 98%, 0.96);
+    --bg-card: hsla(220, 30%, 100%, 0.8);
+    --bg-card-hover: hsla(220, 30%, 96%, 0.9);
+    --border-glass: rgba(0, 0, 0, 0.08);
+    --border-glass-focus: rgba(108, 92, 231, 0.45);
+    --border-dashed: rgba(0, 0, 0, 0.1);
+    
+    --primary: hsl(250, 84%, 60%);
+    --primary-glow: rgba(108, 92, 231, 0.08);
+    --primary-dark: hsl(250, 84%, 50%);
+    --primary-light: hsl(250, 84%, 40%);
+
+    --success: hsl(162, 75%, 34%);
+    --success-light: hsl(162, 75%, 40%);
+    --success-glow: rgba(20, 184, 135, 0.08);
+
+    --danger: hsl(348, 80%, 48%);
+    --danger-light: hsl(348, 80%, 54%);
+    --danger-glow: rgba(244, 63, 110, 0.08);
+
+    --text-primary: hsl(224, 71%, 12%);
+    --text-secondary: hsl(220, 15%, 35%);
+    --text-muted: hsl(220, 10%, 50%);
+
+    --bg-settings: rgba(0, 0, 0, 0.04);
+    --bg-control: rgba(0, 0, 0, 0.05);
+    --bg-input: rgba(0, 0, 0, 0.02);
+    --bg-item: rgba(0, 0, 0, 0.015);
+    --bg-modal: hsla(220, 30%, 100%, 0.98);
+}
+
+/* ==========================================
+   BASE & RESET
+   ========================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Tajawal', sans-serif;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow-x: hidden;
+    position: relative;
+}
+
+/* Background Glowing Elements (Desktop decoration) */
+.desktop-bg-elements {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.bg-circle {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(100px);
+    opacity: 0.15;
+}
+
+.bg-circle-1 {
+    width: 400px;
+    height: 400px;
+    background: var(--primary);
+    top: -100px;
+    left: -100px;
+}
+
+.bg-circle-2 {
+    width: 500px;
+    height: 500px;
+    background: var(--success);
+    bottom: -150px;
+    right: -150px;
+}
+
+/* ==========================================
+   MOBILE-FIRST APP FRAME (MOCKUP ON DESKTOP)
+   ========================================== */
+.app-frame {
+    width: 100%;
+    max-width: 480px; /* Standard mobile width */
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-frame);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    border: none;
+    overflow-y: auto;
+    position: relative;
+}
+
+@media (min-width: 481px) {
+    .app-frame {
+        height: 92vh;
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border-glass);
+        margin: 4vh auto;
+    }
+    
+    /* Elegant custom scrollbar for desktop frame */
+    .app-frame::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .app-frame::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    
+    .app-frame::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 3px;
+    }
+    
+    .app-frame::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+}
+
+/* ==========================================
+   APP HEADER & METRICS
+   ========================================== */
+.app-header {
+    padding: 24px 20px 16px 20px;
+    background: linear-gradient(180deg, rgba(108, 92, 231, 0.08) 0%, rgba(0, 0, 0, 0) 100%);
+    border-bottom: 1px solid var(--border-glass);
+}
+
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.brand-icon {
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.4);
+}
+
+.brand h1 {
+    font-size: 1.15rem;
+    font-weight: 700;
+}
+
+.brand .subtitle {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.header-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.icon-btn-toggle {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-glass);
+    color: var(--text-secondary);
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.icon-btn-toggle:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    transform: rotate(45deg);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Header Store Switcher styling */
+.store-switcher-wrapper {
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.store-switcher-inner {
+    width: 100%;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.store-switcher-icon {
+    position: absolute;
+    right: 14px;
+    width: 18px;
+    height: 18px;
+    color: var(--primary-light);
+    pointer-events: none;
+    z-index: 10;
+}
+
+.store-select {
+    font-weight: 700;
+    padding-right: 42px !important;
+    background-color: rgba(255, 255, 255, 0.03) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    color: var(--primary-light) !important;
+    font-size: 0.92rem !important;
+}
+
+/* Collapsible Settings Drawer */
+.settings-panel {
+    background: var(--bg-settings);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    margin-bottom: 20px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    max-height: 480px; /* Expanded limit for stores manager */
+    overflow: hidden;
+    opacity: 1;
+}
+
+.settings-panel.collapsed {
+    max-height: 0;
+    padding: 0 16px;
+    margin-bottom: 0;
+    border-color: transparent;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.settings-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: var(--primary-light);
+}
+
+.settings-title i {
+    width: 16px;
+    height: 16px;
+}
+
+.settings-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.settings-grid .form-group.compact {
+    margin-bottom: 0;
+}
+
+.settings-divider {
+    height: 1px;
+    background: var(--border-glass);
+    margin: 4px 0;
+}
+
+/* Add Store layout */
+.add-store-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.add-store-row input {
+    flex: 1;
+    padding: 8px 12px;
+    background: var(--bg-settings);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-size: 0.8rem;
+    outline: none;
+}
+
+.add-store-row input:focus {
+    border-color: var(--primary);
+}
+
+.btn-compact-success {
+    background: var(--success-glow);
+    border: 1px solid rgba(16, 185, 129, 0.15);
+    color: var(--success-light);
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.btn-compact-success:hover {
+    background: var(--success);
+    color: white;
+    box-shadow: 0 0 10px var(--success-glow);
+}
+
+.btn-compact-success i {
+    width: 16px;
+    height: 16px;
+}
+
+/* Store list inside settings panel */
+.stores-management-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 120px;
+    overflow-y: auto;
+    padding: 4px 2px;
+}
+
+.stores-management-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.stores-management-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 2px;
+}
+
+.store-management-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 10px;
+    background: var(--bg-item);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+}
+
+.store-delete-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px;
+    border-radius: 50%;
+    transition: var(--transition-fast);
+}
+
+.store-delete-btn:hover {
+    color: var(--danger-light);
+    background: rgba(244, 63, 94, 0.1);
+}
+
+.store-delete-btn i {
+    width: 14px;
+    height: 14px;
+}
+
+.backup-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-secondary-compact {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border-glass);
+    color: var(--text-secondary);
+    padding: 10px;
+    border-radius: var(--radius-sm);
+    font-size: 0.78rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: var(--transition-fast);
+}
+
+.btn-secondary-compact:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: white;
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.btn-secondary-compact i {
+    width: 14px;
+    height: 14px;
+}
+
+/* Select Form Field style */
+.select-field {
+    width: 100%;
+    padding: 10px 12px;
+    background: var(--bg-settings);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    outline: none;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.5)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: left 12px center;
+    background-size: 14px;
+    padding-left: 36px;
+}
+
+.select-field:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 10px var(--primary-glow);
+}
+
+.select-field option {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+}
+
+body.light-theme .select-field {
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgba(0,0,0,0.5)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+}
+
+/* Balance Card */
+.balance-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    transition: var(--transition-normal);
+}
+
+.balance-card:hover {
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 8px 32px rgba(108, 92, 231, 0.08);
+}
+
+.net-balance-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    font-weight: 400;
+}
+
+.net-balance-value {
+    font-size: 1.85rem;
+    font-weight: 900;
+    transition: color var(--transition-fast);
+}
+
+.net-balance-value.positive {
+    color: var(--success-light);
+    text-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+}
+
+.net-balance-value.negative {
+    color: var(--danger-light);
+    text-shadow: 0 0 15px rgba(244, 63, 94, 0.2);
+}
+
+.net-balance-value.neutral {
+    color: var(--text-primary);
+}
+
+/* Chart Canvas Area */
+.chart-wrapper {
+    width: 100%;
+    max-width: 140px;
+    height: 140px;
+    margin: 16px auto 16px auto;
+    position: relative;
+    animation: slideIn 0.3s ease-out forwards;
+}
+
+#balance-chart {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* Stats Row inside balance card */
+.stats-row {
+    display: flex;
+    gap: 12px;
+    border-top: 1px dashed var(--border-dashed);
+    padding-top: 16px;
+    margin-top: 12px;
+}
+
+.stat-box {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-align: right;
+}
+
+.stat-icon-wrapper {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stat-box-for-me .stat-icon-wrapper {
+    background-color: var(--success-glow);
+    color: var(--success-light);
+}
+
+.stat-box-on-me .stat-icon-wrapper {
+    background-color: var(--danger-glow);
+    color: var(--danger-light);
+}
+
+.stat-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-label {
+    font-size: 0.65rem;
+    color: var(--text-secondary);
+}
+
+.stat-val {
+    font-size: 0.88rem;
+    font-weight: 700;
+}
+
+.stat-box-for-me .stat-val {
+    color: var(--success-light);
+}
+
+.stat-box-on-me .stat-val {
+    color: var(--danger-light);
+}
+
+/* ==========================================
+   MAIN CONTENT
+   ========================================== */
+.app-content {
+    flex: 1;
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.section-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    transition: var(--transition-normal);
+}
+
+.section-card:hover {
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: var(--text-primary);
+}
+
+.section-title i {
+    color: var(--primary-light);
+    width: 20px;
+    height: 20px;
+}
+
+/* ==========================================
+   TRANSACTION FORM WIZARD
+   ========================================== */
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: var(--text-secondary);
+}
+
+/* Amount Row styling */
+.amount-input-row {
+    display: flex;
+    gap: 10px;
+}
+
+.amount-input-row .amount-input-wrapper {
+    flex: 1;
+}
+
+.amount-input-row .currency-select {
+    width: 85px;
+    font-weight: 700;
+    text-align: center;
+    background-position: left 8px center;
+}
+
+.amount-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.amount-input-wrapper input {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--bg-input);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 1.3rem;
+    font-weight: 700;
+    text-align: left;
+    direction: ltr;
+    outline: none;
+    transition: var(--transition-fast);
+}
+
+.amount-input-wrapper input:focus {
+    border-color: var(--primary);
+    background: rgba(108, 92, 231, 0.03);
+    box-shadow: 0 0 12px var(--primary-glow);
+}
+
+/* Standard Inputs */
+.input-with-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-with-icon input {
+    width: 100%;
+    padding: 12px 14px;
+    padding-right: 42px; /* space for right icon */
+    background: var(--bg-input);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    outline: none;
+    transition: var(--transition-fast);
+}
+
+.input-with-icon input:focus {
+    border-color: var(--primary);
+    background: rgba(108, 92, 231, 0.03);
+    box-shadow: 0 0 12px var(--primary-glow);
+}
+
+.input-icon {
+    position: absolute;
+    right: 14px;
+    width: 18px;
+    height: 18px;
+    color: var(--text-secondary);
+    pointer-events: none;
+}
+
+/* Dynamic field transitions */
+#person-label {
+    transition: color var(--transition-fast);
+}
+
+/* Segmented Control Toggle (Lek vs Alek) */
+.segmented-control {
+    display: flex;
+    background: var(--bg-control);
+    border-radius: var(--radius-md);
+    padding: 4px;
+    border: 1px solid var(--border-glass);
+}
+
+.segmented-control input[type="radio"] {
+    display: none;
+}
+
+.segment-label {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 12px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    border-radius: calc(var(--radius-md) - 2px);
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: var(--transition-fast);
+}
+
+.segment-label i {
+    width: 16px;
+    height: 16px;
+}
+
+/* Selected state styling via sibling selector */
+#type-for-me:checked ~ label[for="type-for-me"] {
+    background: var(--success-glow);
+    color: var(--success-light);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
+}
+
+#type-on-me:checked ~ label[for="type-on-me"] {
+    background: var(--danger-glow);
+    color: var(--danger-light);
+    box-shadow: 0 4px 12px rgba(244, 63, 94, 0.1);
+}
+
+/* Submit Button */
+.btn {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: var(--radius-md);
+    border: none;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: var(--transition-fast);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(108, 92, 231, 0.4);
+}
+
+.btn-primary:active {
+    transform: translateY(1px);
+}
+
+/* ==========================================
+   HISTORY SECTION (SEARCH & FILTERS)
+   ========================================== */
+.history-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.history-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.badge {
+    background: rgba(255, 255, 255, 0.06);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-glass);
+}
+
+.icon-action-btn {
+    background: rgba(108, 92, 231, 0.08);
+    border: 1px solid var(--border-glass);
+    color: var(--primary-light);
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: var(--transition-fast);
+}
+
+.icon-action-btn:hover {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 4px 10px var(--primary-glow);
+}
+
+.icon-action-btn i {
+    width: 14px;
+    height: 14px;
+}
+
+.search-filter-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+/* Search Input Box */
+.search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-box input {
+    width: 100%;
+    padding: 10px 12px;
+    padding-right: 36px;
+    padding-left: 36px;
+    background: var(--bg-control);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    outline: none;
+    transition: var(--transition-fast);
+}
+
+.search-box input:focus {
+    border-color: var(--primary);
+    background: rgba(108, 92, 231, 0.02);
+}
+
+.search-icon {
+    position: absolute;
+    right: 12px;
+    width: 16px;
+    height: 16px;
+    color: var(--text-secondary);
+}
+
+.clear-search-btn {
+    position: absolute;
+    left: 12px;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px;
+}
+
+.clear-search-btn:hover {
+    color: white;
+}
+
+/* Filter Chips */
+.filter-chips {
+    display: flex;
+    gap: 8px;
+}
+
+.chip {
+    flex: 1;
+    background: var(--bg-input);
+    border: 1px solid var(--border-glass);
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: var(--transition-fast);
+    text-align: center;
+}
+
+.chip:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: white;
+}
+
+.chip.active[data-filter="all"] {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+    box-shadow: 0 4px 10px var(--primary-glow);
+}
+
+.chip.active[data-filter="for_me"] {
+    background: var(--success);
+    border-color: var(--success);
+    color: white;
+    box-shadow: 0 4px 10px var(--success-glow);
+}
+
+.chip.active[data-filter="on_me"] {
+    background: var(--danger);
+    border-color: var(--danger);
+    color: white;
+    box-shadow: 0 4px 10px var(--danger-glow);
+}
+
+/* ==========================================
+   TRANSACTIONS LIST ITEMS
+   ========================================== */
+.transactions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 150px;
+    position: relative;
+}
+
+/* Empty State Styling */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 32px 16px;
+    color: var(--text-secondary);
+}
+
+.empty-icon-wrapper {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--bg-item);
+    border: 1px dashed var(--border-dashed);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+}
+
+.empty-icon-wrapper i {
+    width: 32px;
+    height: 32px;
+}
+
+.empty-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.empty-desc {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+    max-width: 240px;
+}
+
+/* Individual Transaction Card */
+.transaction-item {
+    background: var(--bg-item);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-md);
+    padding: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: var(--transition-normal);
+    animation: slideIn 0.3s ease-out forwards;
+}
+
+.transaction-item:hover {
+    background: var(--bg-card-hover);
+    border-color: rgba(255, 255, 255, 0.1);
+    transform: translateX(-2px);
+}
+
+.item-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Rounded Indicator Dot/Icon Wrapper */
+.indicator-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.transaction-item.for_me .indicator-icon {
+    background: var(--success-glow);
+    color: var(--success-light);
+}
+
+.transaction-item.on_me .indicator-icon {
+    background: var(--danger-glow);
+    color: var(--danger-light);
+}
+
+.item-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.item-title {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+/* Store tag styling inside transaction history */
+.store-tag {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 12px;
+    background: rgba(108, 92, 231, 0.1);
+    color: var(--primary-light);
+    border: 1px solid rgba(108, 92, 231, 0.15);
+    margin-left: 6px;
+    vertical-align: middle;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.item-desc {
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+}
+
+.item-date {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+}
+
+.item-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.item-amount {
+    font-size: 1.05rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.transaction-item.for_me .item-amount {
+    color: var(--success-light);
+}
+
+.transaction-item.on_me .item-amount {
+    color: var(--danger-light);
+}
+
+/* Delete / settle button */
+.delete-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.delete-btn:hover {
+    background: rgba(244, 63, 94, 0.1);
+    color: var(--danger-light);
+}
+
+/* ==========================================
+   APP FOOTER
+   ========================================== */
+.app-footer {
+    padding: 20px;
+    text-align: center;
+    border-top: 1px solid var(--border-glass);
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.footer-note {
+    font-size: 0.65rem;
+    opacity: 0.7;
+}
+
+/* ==========================================
+   ANIMATIONS & KEYFRAMES
+   ========================================== */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+}
+
+.item-removing {
+    animation: fadeOut 0.25s ease-in forwards;
+}
+
+/* Form validation styling triggers */
+.input-error {
+    border-color: var(--danger) !important;
+    background: rgba(244, 63, 94, 0.03) !important;
+}
+
+/* ==========================================
+   PAYMENT MODAL (PARTIAL SETTLEMENT)
+   ========================================== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    animation: fadeIn 0.2s ease-out forwards;
+}
+
+.modal-card {
+    background: var(--bg-modal);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-lg);
+    width: 90%;
+    max-width: 420px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+    animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-glass);
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+}
+
+.modal-header h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--primary-light);
+}
+
+.close-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.8rem;
+    cursor: pointer;
+    line-height: 1;
+    transition: var(--transition-fast);
+}
+
+.close-btn:hover {
+    color: white;
+}
+
+.modal-body {
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding-left: 4px;
+}
+
+/* Custom scrollbar for modal body */
+.modal-body::-webkit-scrollbar {
+    width: 4px;
+}
+.modal-body::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 2px;
+}
+
+.debt-info-card {
+    background: var(--bg-item);
+    border: 1px dashed var(--border-dashed);
+    border-radius: var(--radius-md);
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    text-align: right;
+}
+
+.debt-person {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.debt-remaining {
+    font-size: 0.88rem;
+    color: var(--success-light);
+    font-weight: 700;
+}
+
+.payment-history-section {
+    margin-top: 16px;
+    border-top: 1px dashed var(--border-dashed);
+    padding-top: 16px;
+}
+
+.payment-history-section h4 {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+    text-align: right;
+}
+
+.payment-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 140px;
+    overflow-y: auto;
+    padding-left: 2px;
+}
+
+.payment-history-list::-webkit-scrollbar {
+    width: 4px;
+}
+.payment-history-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 2px;
+}
+
+.payment-history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-item);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-sm);
+    padding: 8px 10px;
+    font-size: 0.76rem;
+}
+
+.payment-item-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    text-align: right;
+}
+
+.payment-item-desc {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.payment-item-date {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+}
+
+.payment-item-amount {
+    font-weight: 700;
+    color: var(--success-light);
+    direction: ltr;
+}
+
+/* History list info indicators */
+.debt-remaining-subtext {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+    display: block;
+}
+
+/* Coin payments button styling */
+.coins-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.coins-btn:hover {
+    background: rgba(16, 185, 129, 0.08);
+    color: var(--success-light);
+}
+
+.coins-btn i {
+    width: 16px;
+    height: 16px;
+}
+
+/* Settled completely items styling */
+.transaction-item.settled {
+    opacity: 0.5;
+}
+.transaction-item.settled:hover {
+    transform: none;
+}
+.transaction-item.settled .item-amount {
+    text-decoration: line-through;
+    color: var(--text-muted) !important;
+}
+.transaction-item.settled .indicator-icon {
+    background: rgba(255, 255, 255, 0.02) !important;
+    color: var(--text-muted) !important;
+}
+.transaction-item.settled .coins-btn {
+    display: none;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Selected payment status styling */
+#status-deferred:checked ~ label[for="status-deferred"] {
+    background: rgba(108, 92, 231, 0.15);
+    color: var(--primary-light);
+    box-shadow: 0 4px 12px rgba(108, 92, 231, 0.1);
+}
+
+#status-settled:checked ~ label[for="status-settled"] {
+    background: var(--success-glow);
+    color: var(--success-light);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
+}
+
+/* ==========================================
+   VIEW TAB SWITCHER (DEBTS VS CASH)
+   ========================================== */
+.view-toggle-container {
+    display: flex;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: var(--radius-md);
+    padding: 4px;
+    border: 1px solid var(--border-glass);
+    margin-bottom: 16px;
+    gap: 4px;
+}
+
+.view-tab {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    border-radius: calc(var(--radius-md) - 2px);
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    transition: var(--transition-fast);
+}
+
+.view-tab i {
+    width: 16px;
+    height: 16px;
+}
+
+.view-tab:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.view-tab.active {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(108, 92, 231, 0.25);
+}
+
+/* ==========================================
+   WIZARD STEPS PROGRESSIVE DISCLOSURE
+   ========================================== */
+.wizard-step {
+    display: none;
+}
+
+.wizard-step.visible {
+    display: block;
+    animation: slideDownFade 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes slideDownFade {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ==========================================
+   FORM ACTION ROW & EDIT BUTTON STYLES
+   ========================================== */
+.form-actions-row {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    margin-top: 8px;
+}
+
+.form-actions-row .btn {
+    flex: 2;
+}
+
+.form-actions-row #cancel-edit-btn {
+    flex: 1.2;
+    margin-top: 0;
+}
+
+/* Edit transaction card action button */
+.edit-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.edit-btn:hover {
+    background: rgba(108, 92, 231, 0.08);
+    color: var(--primary-light);
+}
+
+.edit-btn i {
+    width: 16px;
+    height: 16px;
+}
+
+

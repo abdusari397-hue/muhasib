@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>محاسب | إدارة الديون الشخصية</title>
+    <!-- Google Fonts: Tajawal -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <!-- CSS Stylesheet -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="desktop-bg-elements">
+        <div class="bg-circle bg-circle-1"></div>
+        <div class="bg-circle bg-circle-2"></div>
+    </div>
+
+    <div class="app-frame">
+        <!-- App Header -->
+        <header class="app-header">
+            <div class="header-top">
+                <div class="brand">
+                    <div class="brand-icon">
+                        <i data-lucide="wallet"></i>
+                    </div>
+                    <div>
+                        <h1>تطبيق محاسب</h1>
+                        <p class="subtitle">دليلك الذكي لإدارة ديونك</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button id="theme-toggle-btn" class="icon-btn-toggle" title="تغيير المظهر">
+                        <i data-lucide="sun"></i>
+                    </button>
+                    <button id="settings-toggle-btn" class="icon-btn-toggle" title="الإعدادات">
+                        <i data-lucide="settings"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Active Store Switcher in Header -->
+            <div class="store-switcher-wrapper">
+                <div class="store-switcher-inner">
+                    <i data-lucide="store" class="store-switcher-icon"></i>
+                    <select id="header-store-select" class="select-field store-select">
+                        <!-- Dynamic list of stores and "All" option -->
+                    </select>
+                </div>
+            </div>
+
+            <!-- Collapsible Settings Panel -->
+            <div id="settings-panel" class="settings-panel collapsed">
+                <h3 class="settings-title">
+                    <i data-lucide="sliders"></i>
+                    <span>إعدادات التطبيق</span>
+                </h3>
+                <div class="settings-grid">
+                    <!-- Base Currency Setting -->
+                    <div class="form-group compact">
+                        <label for="primary-currency">العملة الافتراضية للرصيد</label>
+                        <select id="primary-currency" class="select-field">
+                            <option value="ر.س">ر.س (ريال سعودي)</option>
+                            <option value="$">$ (دولار أمريكي)</option>
+                            <option value="د.إ">د.إ (درهم إماراتي)</option>
+                            <option value="ج.م">ج.م (جنيه مصري)</option>
+                            <option value="€">€ (يورو أوروبي)</option>
+                        </select>
+                    </div>
+
+                    <div class="settings-divider"></div>
+
+                    <!-- Store Management Panel -->
+                    <div class="form-group compact">
+                        <label>إدارة المتاجر المتاحة</label>
+                        <div class="add-store-row">
+                            <input type="text" id="new-store-name" placeholder="اسم المتجر الجديد..." maxlength="30">
+                            <button id="add-store-btn" class="btn-compact-success" type="button" title="إضافة متجر جديد">
+                                <i data-lucide="plus"></i>
+                            </button>
+                        </div>
+                        <div id="stores-management-list" class="stores-management-list">
+                            <!-- Dynamic list of active stores with delete keys -->
+                        </div>
+                    </div>
+
+                    <div class="settings-divider"></div>
+
+                    <!-- Cloud Backup controls -->
+                    <div class="backup-actions">
+                        <button id="backup-export-btn" class="btn btn-secondary-compact" title="تصدير البيانات كملف JSON">
+                            <i data-lucide="upload-cloud"></i>
+                            <span>نسخ احتياطي</span>
+                        </button>
+                        <button id="backup-import-btn" class="btn btn-secondary-compact" title="استعادة البيانات من ملف JSON">
+                            <i data-lucide="download-cloud"></i>
+                            <span>استعادة</span>
+                        </button>
+                        <input type="file" id="backup-file-input" accept=".json" style="display: none;">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Section Tab Switcher (Cash Box vs Debts Ledger) -->
+            <div class="view-toggle-container">
+                <button id="view-tab-debts" class="view-tab active" type="button">
+                    <i data-lucide="book-open"></i>
+                    <span>دفتر الديون</span>
+                </button>
+                <button id="view-tab-cash" class="view-tab" type="button">
+                    <i data-lucide="wallet"></i>
+                    <span>الصندوق المالي</span>
+                </button>
+            </div>
+
+            <!-- Quick Balance Widget -->
+            <div class="balance-card">
+                <div id="net-balance-label" class="net-balance-label">صافي الرصيد المعلق</div>
+                <div id="net-balance-value" class="net-balance-value">0.00 ر.س</div>
+                
+                <!-- Chart Container (Doughnut) -->
+                <div id="chart-wrapper" class="chart-wrapper" style="display: none;">
+                    <canvas id="balance-chart"></canvas>
+                </div>
+                
+                <div class="stats-row">
+                    <div class="stat-box stat-box-for-me">
+                        <div class="stat-icon-wrapper">
+                            <i data-lucide="arrow-down-left"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label" id="label-for-me">لك (تطالبهم)</span>
+                            <span id="total-for-me" class="stat-val">0.00 ر.س</span>
+                        </div>
+                    </div>
+                    <div class="stat-box stat-box-on-me">
+                        <div class="stat-icon-wrapper">
+                            <i data-lucide="arrow-up-right"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label" id="label-on-me">عليك (يطالبونك)</span>
+                            <span id="total-on-me" class="stat-val">0.00 ر.س</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="app-content">
+            <!-- Add Transaction Section -->
+            <section class="section-card add-transaction-section">
+                <h2 class="section-title">
+                    <i data-lucide="plus-circle"></i>
+                    <span>إضافة معاملة جديدة</span>
+                </h2>
+                
+                <form id="transaction-form" novalidate>
+                    <!-- Step 1: Amount (Always Visible) -->
+                    <div class="form-group" id="amount-group">
+                        <label for="amount">المبلغ المالي والعملة</label>
+                        <div class="amount-input-row">
+                            <div class="amount-input-wrapper">
+                                <input type="number" id="amount" min="0.01" step="any" placeholder="0.00" required>
+                            </div>
+                            <select id="transaction-currency" class="select-field currency-select">
+                                <option value="ر.س">ر.س</option>
+                                <option value="$">$</option>
+                                <option value="د.إ">د.إ</option>
+                                <option value="ج.م">ج.م</option>
+                                <option value="€">€</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Transaction Type Selection (Wizard Step) -->
+                    <div class="form-group wizard-step" id="type-group">
+                        <label>هل هذا المبلغ لك أم عليك؟</label>
+                        <div class="segmented-control">
+                            <input type="radio" id="type-for-me" name="transaction-type" value="for_me" checked>
+                            <label for="type-for-me" class="segment-label segment-for-me">
+                                <i data-lucide="plus"></i>
+                                <span>لك (حقوقك)</span>
+                            </label>
+                            
+                            <input type="radio" id="type-on-me" name="transaction-type" value="on_me">
+                            <label for="type-on-me" class="segment-label segment-on-me">
+                                <i data-lucide="minus"></i>
+                                <span>عليك (ديونك)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Payment Status (Wizard Step) -->
+                    <div class="form-group wizard-step" id="payment-status-group">
+                        <label id="payment-status-label">هل تم استلام المبلغ بالفعل أم هو دين مؤجل؟</label>
+                        <div class="segmented-control">
+                            <input type="radio" id="status-deferred" name="payment-status" value="deferred" checked>
+                            <label for="status-deferred" class="segment-label segment-deferred">
+                                <i data-lucide="clock"></i>
+                                <span>دين مؤجل</span>
+                            </label>
+                            
+                            <input type="radio" id="status-settled" name="payment-status" value="settled">
+                            <label for="status-settled" class="segment-label segment-settled">
+                                <i data-lucide="check-circle-2"></i>
+                                <span id="status-settled-text">تم الاستلام فوراً</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Person (Wizard Step) -->
+                    <div class="form-group wizard-step" id="person-group">
+                        <label id="person-label" for="person">من الشخص المدين لك؟ (من من؟)</label>
+                        <div class="input-with-icon">
+                            <i data-lucide="user" class="input-icon"></i>
+                            <input type="text" id="person" placeholder="اسم الشخص المعني..." required>
+                        </div>
+                    </div>
+
+                    <!-- Step 5: Extra Details and Submit Button (Wizard Step) -->
+                    <div class="wizard-step" id="submit-group">
+                        <!-- Store Association -->
+                        <div class="form-group" id="transaction-store-group">
+                            <label for="transaction-store">المتجر التابع له المعاملة</label>
+                            <div class="input-with-icon">
+                                <i data-lucide="store" class="input-icon"></i>
+                                <select id="transaction-store" class="select-field">
+                                    <!-- Dynamic list of stores -->
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Additional details (Optional Description) -->
+                        <div class="form-group" id="description-group">
+                            <label for="description">ملاحظات (اختياري)</label>
+                            <div class="input-with-icon">
+                                <i data-lucide="file-text" class="input-icon"></i>
+                                <input type="text" id="description" placeholder="السبب، مثل: عشاء، استعارة، إيجار...">
+                            </div>
+                        </div>
+
+                        <!-- Submit & Cancel Edit Buttons -->
+                        <div class="form-actions-row">
+                            <button type="submit" class="btn btn-primary" id="submit-btn">
+                                <span>حفظ المعاملة</span>
+                                <i data-lucide="check-circle-2"></i>
+                            </button>
+                            <button type="button" class="btn btn-secondary-compact" id="cancel-edit-btn" style="display: none;">
+                                <span>إلغاء التعديل</span>
+                                <i data-lucide="x"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Transactions List Section -->
+            <section class="section-card history-section">
+                <div class="history-header">
+                    <h2 class="section-title">
+                        <i data-lucide="history"></i>
+                        <span id="history-section-title">سجل المعاملات</span>
+                    </h2>
+                    <div class="history-actions">
+                        <button id="export-csv-btn" class="icon-action-btn" title="تصدير كـ CSV (إكسل)">
+                            <i data-lucide="file-spreadsheet"></i>
+                            <span>تصدير CSV</span>
+                        </button>
+                        <span id="transaction-count" class="badge">0 معاملة</span>
+                    </div>
+                </div>
+
+                <!-- Search and Filter Bar -->
+                <div class="search-filter-bar">
+                    <div class="search-box">
+                        <i data-lucide="search" class="search-icon"></i>
+                        <input type="text" id="search-input" placeholder="ابحث باسم الشخص أو الملاحظة...">
+                        <button id="clear-search-btn" class="clear-search-btn" style="display: none;">
+                            <i data-lucide="x"></i>
+                        </button>
+                    </div>
+
+                    <div class="filter-chips">
+                        <button class="chip active" data-filter="all">الكل</button>
+                        <button class="chip chip-for-me" data-filter="for_me">لك</button>
+                        <button class="chip chip-on-me" data-filter="on_me">عليك</button>
+                    </div>
+                </div>
+
+                <!-- Transactions List Container -->
+                <div id="transactions-list" class="transactions-list">
+                    <!-- Dynamic Items will be appended here -->
+                    <div class="empty-state">
+                        <div class="empty-icon-wrapper">
+                            <i data-lucide="piggy-bank"></i>
+                        </div>
+                        <p class="empty-title">سجلك فارغ تماماً</p>
+                        <p class="empty-desc">أضف معاملتك الأولى بالأعلى وسنقوم باحتساب المبالغ تلقائياً!</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- App Footer -->
+        <footer class="app-footer">
+            <p>تطبيق محاسب الذكي &copy; 2026</p>
+            <p class="footer-note">يتم حفظ البيانات تلقائياً على متصفحك</p>
+        </footer>
+    </div>
+
+    <!-- Payment Modal (Partial Settlement Drawer) -->
+    <div id="payment-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>
+                    <i data-lucide="coins"></i>
+                    <span>تسجيل دفعة سداد</span>
+                </h3>
+                <button id="close-modal-btn" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="debt-info-card">
+                    <p class="debt-person" id="modal-debt-person">المدين: -</p>
+                    <p class="debt-remaining" id="modal-debt-remaining">المبلغ المتبقي: 0.00 ر.س</p>
+                </div>
+                <form id="payment-form" novalidate>
+                    <input type="hidden" id="modal-transaction-id">
+                    <div class="form-group">
+                        <label for="payment-amount">مبلغ الدفعة المسددة</label>
+                        <div class="amount-input-wrapper">
+                            <input type="number" id="payment-amount" min="0.01" step="any" placeholder="0.00" required>
+                            <span class="currency-label" id="modal-currency-label">ر.س</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="payment-description">ملاحظات الدفعة (اختياري)</label>
+                        <div class="input-with-icon">
+                            <i data-lucide="file-text" class="input-icon"></i>
+                            <input type="text" id="payment-description" placeholder="تفاصيل الدفعة، مثلاً: تحويل بنكي...">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="confirm-payment-btn">
+                        <span>تأكيد السداد</span>
+                        <i data-lucide="check"></i>
+                    </button>
+                </form>
+                
+                <!-- Payment History Inside Modal -->
+                <div class="payment-history-section">
+                    <h4>سجل الدفعات السابقة</h4>
+                    <div id="modal-payment-history-list" class="payment-history-list">
+                        <!-- Dynamic list of payments will load here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- App JavaScript -->
+    <script src="app.js"></script>
+</body>
+</html>
